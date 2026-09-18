@@ -1,0 +1,20 @@
+﻿Count: 3
+First item keys: ['name', 'price', 'currency', 'credit_amount', 'description', 'is_active', 'billing_period', 'is_featured', 'benefits', 'id', 'created_at', 'updated_at']
+{
+  "name": "Director",
+  "price": 29.0,
+  "currency": "USD",
+  "credit_amount": 500,
+  "description": "G\u00f3i ph\u1ed5 bi\u1ebfn cho nhu c\u1ea7u t\u1ea1o n\u1ed9i dung th\u01b0\u1eddng xuy\u00ean.",
+  "is_active": true,
+  "billing_period": "monthly",
+  "is_featured": true,
+  "benefits": [
+    "500 credits m\u1ed7i th\u00e1ng",
+    "\u01afu ti\u00ean h\u00e0ng \u0111\u1ee3i x\u1eed l\u00fd",
+    "T\u1ea1o \u1ea3nh \u0111\u1ed9 ph\u00e2n gi\u1ea3i cao"
+  ],
+  "id": 1002,
+  "created_at": "2026-09-09T00:02:46",
+  "updated_at": "2026-09-09T00:03:24"
+}

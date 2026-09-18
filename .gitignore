@@ -1,0 +1,57 @@
+# === Python ===
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+*.log
+.env
+
+# === Flutter / Dart ===
+.dart_tool/
+.flutter-plugins
+.flutter-plugin-dependencies
+.packages
+build/
+*.fvm/
+ios/Pods/
+android/.gradle/
+# Flutter framework / plugin build artifacts
+.flutter-plugins-dependencies
+android/app/src/main/res/flutter_assets/
+ios/Flutter/App.framework/
+ios/Flutter/Flutter.framework/
+ios/Flutter/flutter_assets/
+linux/flutter/
+macos/Flutter/
+windows/flutter/
+# Generated localizations
+*.g.dart
+*.freezed.dart
+
+# === AI Local / Machine Learning ===
+# Model weights (Tránh push file nặng)
+*.pt
+*.pth
+*.onnx
+*.safetensors
+*.bin
+*.gguf
+*.h5
+
+# Data & Training outputs
+data/
+datasets/
+checkpoints/
+runs/
+wandb/
+generated_images/
+translategemma-4b-it/
+SDXL-Lightning/
+
+# === Environment & IDE ===
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

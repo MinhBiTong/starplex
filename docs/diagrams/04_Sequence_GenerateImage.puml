@@ -1,0 +1,64 @@
+@startuml Sequence_ImageGen
+title Project4 - Sequence Diagram: Generate Image
+
+actor User as U
+participant "Flutter Client" as C
+participant "FastAPI Server" as S
+participant "Auth Middleware" as A
+participant "Generation Service" as GS
+participant "TranslateGemma" as TG
+participant "SDXL-Lightning" as SDXL
+database "MySQL" as DB
+participant "File Storage" as FS
+
+== Authentication ==
+U -> C: Open app Home
+C -> S: GET /api/v1/generations/history
+S -> A: Verify JWT token
+A --> S: user_id = 42
+
+== User nhap prompt ==
+U -> C: Nhap prompt tieng Viet
+C -> S: POST /api/v1/generations/image
+S -> A: Verify JWT
+A --> S: user_id = 42
+
+== Kiem tra credit ==
+S -> DB: SELECT balance FROM CreditWallets
+DB --> S: balance = 10 credits
+
+alt balance >= 1
+  S -> DB: INSERT INTO Generations (status=pending)
+  DB --> S: generation_id = 123
+
+  == AI Translation ==
+  GS -> TG: translate_vi_to_en(prompt)
+  TG --> GS: English prompt
+
+  == SDXL Generation ==
+  GS -> SDXL: generate(prompt, aspect_ratio)
+  SDXL --> GS: PIL.Image 512x512
+
+  == Luu file ==
+  GS -> FS: save image
+  FS --> GS: file_url
+  GS -> DB: INSERT INTO GenerationFiles
+
+  == Tru credit ==
+  GS -> DB: UPDATE CreditWallets SET balance = 9
+  GS -> DB: INSERT CreditTransactions
+
+  == Update status ==
+  GS -> DB: UPDATE Generations SET status=completed
+  DB --> GS: OK
+
+  == Response ==
+  GS --> S: {generation_id, file_url, credits: 9}
+  S --> C: 200 OK
+  C --> U: Hien thi anh thanh cong
+else balance < 1
+  S --> C: 402 Payment Required
+  C --> U: Hien thi "Khong du credit"
+end
+
+@enduml

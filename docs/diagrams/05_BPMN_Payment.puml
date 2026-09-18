@@ -1,0 +1,51 @@
+@startuml BPMN_Payment
+title BPMN - Process: Mua Credit va Thanh Toan
+
+start
+:User mo trang Pricing;
+:Xem danh sach Payment Packages;
+:Chon package (vi du: 100 credit = 200.000d);
+
+if (Phuong thuc thanh toan?) then (Stripe)
+  :POST /api/v1/payments/checkout;
+  :Server tao Stripe Checkout Session;
+  :Redirect user den Stripe Hosted Page;
+  :User nhap the tren Stripe;
+
+  if (Thanh toan thanh cong?) then (Co)
+    :Stripe gui webhook;
+    :Server verify signature;
+    :Server cap nhat Payments status=completed;
+    :Server cong credit vao wallet;
+    :INSERT CreditTransactions type=purchase;
+    :User quay ve app;
+    :Hien thi "Thanh cong!";
+    :Gui email xac nhan;
+  else (That bai hoac Huy)
+    :Stripe redirect cancel URL;
+    :Server cap nhat Payments status=failed;
+    :Hien thi "Thanh toan that bai";
+  endif
+
+elseif (MoMo / ZaloPay / VNPay) then (VNPay)
+  :POST /api/v1/payments/checkout method=momo;
+  :Server tao payment request;
+  :User mo app MoMo xac nhan;
+  :MoMo gui IPN webhook;
+  :Server verify signature;
+  :Cap nhat Payments completed;
+  :Cong credit;
+  :Hien thi "Thanh cong!";
+  :Gui email xac nhan;
+
+elseif (Bank Transfer) then (Bank)
+  :Hien thi thong tin tai khoan;
+  :User chuyen khoan thu cong;
+  :Upload anh bill hoac doi admin duyet;
+endif
+
+:Hien thi so du credit moi;
+
+stop
+
+@enduml

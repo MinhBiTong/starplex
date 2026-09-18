@@ -1,0 +1,126 @@
+@startuml UseCaseDiagram
+title Project4 - Use Case Diagram
+left to right direction
+
+skinparam actorStyle awesome
+skinparam packageStyle rectangle
+skinparam usecaseBackgroundColor #E8F4FD
+skinparam usecaseBorderColor #1E88E5
+skinparam actorBackgroundColor #FFE0B2
+
+' ============== ACTORS ==============
+actor "User" as U
+actor "Admin" as A
+actor "Email Service" as E
+actor "Stripe" as S
+actor "MoMo / ZaloPay / VNPay" as MZ
+actor "SDXL-Lightning (AI)" as AI
+
+' ============== SYSTEM BOUNDARY ==============
+rectangle "AI Image & Video Generator System" {
+
+  ' --- AUTH ---
+  package "Authentication" {
+    usecase "Đăng ký" as UC_REG
+    usecase "Đăng nhập" as UC_LOGIN
+    usecase "Quên mật khẩu" as UC_FORGOT
+    usecase "Đặt lại mật khẩu" as UC_RESET
+    usecase "Refresh Token" as UC_REFRESH
+    usecase "Đăng xuất" as UC_LOGOUT
+  }
+
+  ' --- PROFILE ---
+  package "Profile Management" {
+    usecase "Xem profile" as UC_VIEW_PROF
+    usecase "Cập nhật profile" as UC_EDIT_PROF
+    usecase "Đổi mật khẩu" as UC_CHANGE_PW
+    usecase "Chọn ngôn ngữ" as UC_LANG
+  }
+
+  ' --- GENERATION ---
+  package "AI Generation" {
+    usecase "Generate Image" as UC_GEN_IMG
+    usecase "Generate Video" as UC_GEN_VID
+    usecase "Dịch prompt (VI → EN)" as UC_TRANSLATE
+    usecase "Xem lịch sử generations" as UC_VIEW_GEN
+    usecase "Xem chi tiết ảnh" as UC_VIEW_IMG
+    usecase "Tải ảnh về" as UC_DL_IMG
+  }
+
+  ' --- PAYMENT ---
+  package "Credits & Payment" {
+    usecase "Xem số dư credit" as UC_VIEW_CREDIT
+    usecase "Xem gói credit" as UC_VIEW_PKG
+    usecase "Mua credit" as UC_BUY
+    usecase "Thanh toán Stripe" as UC_STRIPE
+    usecase "Thanh toán MoMo/ZaloPay/VNPay" as UC_MZ
+    usecase "Xem lịch sử thanh toán" as UC_VIEW_PAY
+  }
+
+  ' --- ADMIN ---
+  package "Admin Management" {
+    usecase "Quản lý Users" as UC_M_USERS
+    usecase "Ban / Unban User" as UC_BAN
+    usecase "Quản lý Packages" as UC_M_PKG
+    usecase "Quản lý Payments" as UC_M_PAY
+    usecase "Quản lý Generations" as UC_M_GEN
+    usecase "Cấu hình System Settings" as UC_M_SET
+    usecase "Xem Dashboard thống kê" as UC_DASH
+  }
+}
+
+' ============== USER ASSOCIATIONS ==============
+U --> UC_REG
+U --> UC_LOGIN
+U --> UC_FORGOT
+U --> UC_RESET
+U --> UC_REFRESH
+U --> UC_LOGOUT
+
+U --> UC_VIEW_PROF
+U --> UC_EDIT_PROF
+U --> UC_CHANGE_PW
+U --> UC_LANG
+
+U --> UC_GEN_IMG
+U --> UC_GEN_VID
+U --> UC_VIEW_GEN
+U --> UC_VIEW_IMG
+U --> UC_DL_IMG
+
+U --> UC_VIEW_CREDIT
+U --> UC_VIEW_PKG
+U --> UC_BUY
+U --> UC_VIEW_PAY
+
+' ============== ADMIN ASSOCIATIONS ==============
+A --> UC_M_USERS
+A --> UC_BAN
+A --> UC_M_PKG
+A --> UC_M_PAY
+A --> UC_M_GEN
+A --> UC_M_SET
+A --> UC_DASH
+A --> UC_VIEW_PROF
+A --> UC_VIEW_PAY
+
+' ============== EXTERNAL ACTORS ==============
+E --> UC_RESET
+E --> UC_FORGOT
+
+S --> UC_STRIPE
+MZ --> UC_MZ
+
+AI --> UC_TRANSLATE
+AI --> UC_GEN_IMG
+
+' ============== INCLUDE / EXTEND ==============
+UC_GEN_IMG ..> UC_TRANSLATE : <<include>>
+UC_RESET ..> UC_FORGOT : <<extend>>
+
+UC_BUY ..> UC_STRIPE : <<extend>>
+UC_BUY ..> UC_MZ : <<extend>>
+
+UC_M_USERS ..> UC_BAN : <<include>>
+
+@enduml

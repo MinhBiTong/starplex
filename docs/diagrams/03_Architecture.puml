@@ -1,0 +1,115 @@
+@startuml Architecture
+title Project4 - System Architecture Diagram
+
+skinparam rectangle {
+  roundCorner 15
+}
+skinparam componentStyle uml2
+skinparam defaultFontSize 13
+skinparam backgroundColor #FAFAFA
+
+' ============== PRESENTATION LAYER ==============
+package "PRESENTATION LAYER" as PL #FFE0B2 {
+  rectangle "**Flutter Client**\n(Web / Mobile / Desktop)" as FLUTTER {
+    component "Authentication\nScreens" as AUTH_S
+    component "Home /\nGenerator UI" as HOME_S
+    component "Profile /\nEdit Profile" as PROF_S
+    component "Pricing /\nPayment" as PAY_S
+    component "Admin\nDashboard" as ADMIN_S
+    component "Library /\nHistory" as LIB_S
+  }
+
+  database "**Localizations**\n(11 ngôn ngữ)" as L10N
+}
+
+' ============== API GATEWAY ==============
+package "API GATEWAY LAYER" as APIL #B3E5FC {
+  rectangle "**FastAPI Server** (Python 3.11+)\nuvicorn ASGI" as FASTAPI {
+    component "JWT Middleware\n(CORS / Auth)" as JWT_MW
+    component "Rate Limiting\n(Redis)" as RL
+  }
+}
+
+' ============== CONTROLLER LAYER ==============
+package "CONTROLLER LAYER" as CTL #C8E6C9 {
+  rectangle "**REST API Endpoints**" as API {
+    component "/api/v1/auth\nregister, login,\nforgot/reset,\nrefresh" as EP_AUTH
+    component "/api/v1/users\nprofile, list,\nupdate, ban" as EP_USERS
+    component "/api/v1/generations\nimage, video,\nhistory" as EP_GEN
+    component "/api/v1/payments\npackages, checkout,\nwebhook" as EP_PAY
+    component "/api/v1/admin\nsettings,\nstats" as EP_ADMIN
+  }
+}
+
+' ============== SERVICE LAYER ==============
+package "SERVICE LAYER" as SVC #F8BBD0 {
+  rectangle "**Business Logic Services**" as SERVICES {
+    component "AuthService\n(JWT, bcrypt)" as SVC_AUTH
+    component "UserService" as SVC_USER
+    component "GenerationService" as SVC_GEN
+    component "PaymentService\n(MoMo, ZaloPay,\nVNPay, Stripe)" as SVC_PAY
+    component "EmailService\n(SMTP Gmail)" as SVC_EMAIL
+    component "CreditService\n(wallet logic)" as SVC_CREDIT
+  }
+}
+
+' ============== AI LAYER ==============
+package "AI / ML LAYER" as AIL #E1BEE7 {
+  rectangle "**AI Models** (GPU - CUDA)" as AI {
+    component "TranslateGemma-4B\n(VI → EN prompt)" as TRANS
+    component "SDXL-Lightning\n(4-step UNet)" as SDXL
+    component "Image Pipeline\n(diffusers)" as IMG
+  }
+}
+
+' ============== DATA LAYER ==============
+package "DATA LAYER" as DATAL #FFCDD2 {
+  database "**MySQL 8**\n12 tables\n(aiomysql)" as MYSQL
+  database "**Redis**\ncache, sessions,\nrate limit" as REDIS
+  storage "**File Storage**\ngenerated_images/" as FS
+  cloud "**External APIs**\nStripe, MoMo,\nZaloPay, VNPay" as EXT
+}
+
+' ============== CONNECTIONS ==============
+FLUTTER -[hidden]- L10N
+
+AUTH_S -down-> JWT_MW : HTTPS / JSON
+HOME_S -down-> JWT_MW
+PROF_S -down-> JWT_MW
+PAY_S -down-> JWT_MW
+ADMIN_S -down-> JWT_MW
+LIB_S -down-> JWT_MW
+
+JWT_MW -down-> RL
+RL -down-> EP_AUTH
+RL -down-> EP_USERS
+RL -down-> EP_GEN
+RL -down-> EP_PAY
+RL -down-> EP_ADMIN
+
+EP_AUTH -down-> SVC_AUTH
+EP_USERS -down-> SVC_USER
+EP_GEN -down-> SVC_GEN
+EP_PAY -down-> SVC_PAY
+EP_ADMIN -down-> SVC_USER
+EP_ADMIN -down-> SVC_PAY
+
+SVC_GEN -down-> TRANS
+SVC_GEN -down-> SDXL
+SDXL -down-> IMG
+IMG -down-> FS : ".png files"
+
+SVC_AUTH -down-> MYSQL : aiomysql
+SVC_USER -down-> MYSQL
+SVC_CREDIT -down-> MYSQL
+SVC_PAY -down-> MYSQL
+SVC_GEN -down-> MYSQL
+SVC_EMAIL -down-> EXT : SMTP
+
+SVC_AUTH ..> REDIS : cache
+SVC_USER ..> REDIS : cache
+RL ..> REDIS : counters
+
+SVC_PAY -down-> EXT : webhook
+
+@enduml

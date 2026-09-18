@@ -1,0 +1,60 @@
+@startuml Activity_DangKy
+title Project4 - Activity Diagram: Quy trình Đăng ký tài khoản
+
+skinparam activity {
+  BackgroundColor #E8F4FD
+  BorderColor #1E88E5
+  FontSize 13
+  DiamondBackgroundColor #FFE0B2
+}
+skinparam arrowThickness 2
+
+start
+
+:User mở màn hình Đăng ký;
+:Nhập email + password + full_name;
+
+:Validate phía client:\n- email format (regex)\n- password >= 8 ký tự\n- email không rỗng;
+
+if (Client validation OK?) then (Có)
+  :POST /api/v1/auth/register\n{email, password, full_name};
+  :Server validate lại (Pydantic schema);
+  :Hash password bằng bcrypt;
+
+  :SELECT * FROM Users\nWHERE email = ?;
+
+  if (Email đã tồn tại?) then (Có)
+    :Trả về 400\n"Email already registered";
+    :Client hiển thị lỗi;
+  else (Không)
+    :INSERT INTO Users\n(email, password_hash,\nfull_name, role='user',\nstatus='active');
+    :INSERT INTO CreditWallets\n(user_id, balance=0);
+
+    fork
+      :Welcome email qua EmailService\n(SMTP Gmail);
+    fork again
+      :Tạo access_token (JWT, 30');
+      :Tạo refresh_token (JWT, 15 ngày);
+      :INSERT RefreshTokens\n(token_hash);
+    end fork
+
+    :Trả về 201 Created\n{user, access_token,\nrefresh_token};
+    :Client lưu token (secure storage);
+    :Navigate → Home Screen;
+  endif
+else (Không - validation fail)
+  :Hiển thị lỗi ngay\ntrên form;
+  stop
+endif
+
+stop
+
+note right
+  **Security:**
+  - bcrypt hash (12 rounds)
+  - JWT HS256 signed
+  - Refresh token hash lưu DB
+  - HTTPS only
+end note
+
+@enduml

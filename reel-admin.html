@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="vi" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>REEL — Admin Console</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --void:#06070b; --void-2:#0a0b13; --surface:#11131e;
+    --azure:#3d7cff; --azure-soft:#6fa3ff; --indigo:#8b7bff; --coral:#ff9466;
+    --mist:#f1f3f8; --smoke:#8b93a6; --muted:#524d5c;
+    --good:#7ee0a8; --warn:#ffcf7e; --bad:#ff9d9d;
+    --glass:rgba(255,255,255,.045); --glass-strong:rgba(255,255,255,.08);
+    --hair:rgba(255,255,255,.1); --hair-soft:rgba(255,255,255,.06);
+    --font-display:'Space Grotesk','Inter',sans-serif;
+    --font-body:'Inter',sans-serif;
+    --font-mono:'JetBrains Mono',Consolas,monospace;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0; background:var(--void); color:var(--mist); font-family:var(--font-body); min-height:100vh; overflow-x:hidden;}
+  h1,h2,h3,h4{font-family:var(--font-display); margin:0;}
+  button{font-family:inherit; cursor:pointer;}
+  a{text-decoration:none; color:inherit;}
+  [hidden]{display:none !important;}
+
+  .aurora{position:fixed; inset:0; z-index:0; overflow:hidden; pointer-events:none;}
+  .orb{position:absolute; border-radius:50%; filter:blur(110px); opacity:.2;}
+  .orb-1{width:520px;height:520px; right:-220px; top:-200px; background:radial-gradient(circle,var(--coral),transparent 70%); animation:d1 30s ease-in-out infinite alternate;}
+  .orb-2{width:460px;height:460px; left:-200px; bottom:-160px; background:radial-gradient(circle,var(--azure),transparent 70%); animation:d2 36s ease-in-out infinite alternate;}
+  @keyframes d1{from{transform:translate(0,0);}to{transform:translate(50px,40px);}}
+  @keyframes d2{from{transform:translate(0,0);}to{transform:translate(-40px,50px);}}
+  .rel{position:relative; z-index:2;}
+
+  .nav{position:sticky; top:0; z-index:20; display:flex; align-items:center; gap:12px; padding:12px 28px;
+    border-bottom:1px solid var(--hair-soft); background:rgba(6,7,11,.78); backdrop-filter:blur(16px);}
+  .nav-brand{display:flex; align-items:center; gap:9px;}
+  .brand-mark{width:24px;height:24px; border-radius:7px; background:linear-gradient(135deg,var(--coral),var(--indigo) 55%,var(--azure)); display:flex; align-items:center; justify-content:center;}
+  .brand-mark::after{content:""; width:7px;height:7px; border-radius:2px; background:var(--void);}
+  .brand-word{font-family:var(--font-display); font-weight:700; font-size:16.5px; letter-spacing:.4px;}
+  .admin-tag{font-family:var(--font-mono); font-size:9px; letter-spacing:1.6px; text-transform:uppercase; color:var(--coral);
+    border:1px solid rgba(255,148,102,.4); background:rgba(255,148,102,.1); border-radius:999px; padding:3px 10px;}
+  .nav-links{display:flex; gap:4px; margin-left:14px;}
+  .nav-link{padding:7px 14px; border-radius:9px; font-size:13px; color:var(--smoke); border:1px solid transparent;}
+  .nav-link:hover{color:var(--mist); background:var(--glass);}
+  .nav-link.active{color:#fff; background:linear-gradient(90deg,rgba(255,148,102,.18),rgba(139,123,255,.12)); border-color:rgba(255,148,102,.35);}
+  .nav-spacer{flex:1;}
+  .credit-pill{display:flex; align-items:center; gap:7px; background:var(--glass); border:1px solid var(--hair); border-radius:999px; padding:6px 13px;
+    font-family:var(--font-mono); font-size:11px; color:var(--mist); letter-spacing:.5px;}
+  .credit-pill .dot{width:6px;height:6px; border-radius:50%; background:var(--coral);}
+  .live{display:flex; align-items:center; gap:7px; font-family:var(--font-mono); font-size:10px; letter-spacing:1px; color:var(--good);}
+  .live .dot{width:6px;height:6px; border-radius:50%; background:var(--good); animation:pulse 1.6s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.35;}}
+  .avatar{width:26px;height:26px; border-radius:50%; background:linear-gradient(135deg,var(--coral),var(--indigo)); display:flex; align-items:center; justify-content:center; font-family:var(--font-display); font-weight:700; font-size:11px; color:#fff;}
+
+  .wrap{max-width:1280px; margin:0 auto; padding:26px 28px 90px;}
+  .layout{display:flex; gap:24px; align-items:flex-start;}
+  .side{flex:0 0 236px; position:sticky; top:78px;}
+  .menu{background:var(--glass); border:1px solid var(--hair); border-radius:14px; padding:6px; display:flex; flex-direction:column; gap:2px;}
+  .mi{display:flex; align-items:center; gap:11px; padding:10px 13px; border-radius:10px; font-size:13px; color:var(--smoke); border:1px solid transparent; cursor:pointer; background:none; text-align:left; width:100%;}
+  .mi:hover{background:var(--glass-strong); color:var(--mist);}
+  .mi.active{color:#fff; background:linear-gradient(90deg,rgba(255,148,102,.18),rgba(139,123,255,.12)); border-color:rgba(255,148,102,.35);}
+  .mi .cnt{margin-left:auto; font-family:var(--font-mono); font-size:10px; color:var(--muted);}
+  .side-note{margin-top:12px; background:rgba(255,207,126,.06); border:1px solid rgba(255,207,126,.3); border-radius:12px; padding:11px 13px; font-size:11.5px; color:var(--warn); line-height:1.5;}
+  .main{flex:1; min-width:0;}
+  .panel{display:none; animation:fadein .22s ease;}
+  .panel.show{display:block;}
+  @keyframes fadein{from{opacity:0; transform:translateY(8px);}to{opacity:1; transform:none;}}
+  .ph{margin-bottom:18px;}
+  .ph h2{font-size:22px;}
+  .ph p{margin:6px 0 0; font-size:13px; color:var(--smoke);}
+
+  .stats{display:grid; grid-template-columns:repeat(4,1fr); gap:13px; margin-bottom:18px;}
+  .stat{background:var(--glass); border:1px solid var(--hair); border-radius:15px; padding:16px 18px; position:relative;}
+  .stat b{display:block; font-family:var(--font-display); font-size:22px; letter-spacing:-.4px;}
+  .stat span{display:block; margin-top:5px; font-family:var(--font-mono); font-size:8.5px; letter-spacing:1.1px; text-transform:uppercase; color:var(--muted);}
+  .stat .trend{position:absolute; top:14px; right:16px; font-family:var(--font-mono); font-size:9.5px;}
+  .up{color:var(--good);} .down{color:var(--bad);}
+
+  .duo{display:grid; grid-template-columns:1.4fr 1fr; gap:14px; margin-bottom:14px;}
+  .box{background:var(--glass); border:1px solid var(--hair); border-radius:16px; padding:18px 20px;}
+  .box h4{font-family:var(--font-mono); font-size:9.5px; letter-spacing:1.3px; text-transform:uppercase; color:var(--smoke); font-weight:500; margin-bottom:14px;}
+  .bars{display:flex; align-items:flex-end; gap:8px; height:120px;}
+  .bar{flex:1; display:flex; flex-direction:column; align-items:center; gap:6px; height:100%; justify-content:flex-end;}
+  .bar i{width:100%; border-radius:5px 5px 2px 2px; background:linear-gradient(180deg,var(--azure),var(--indigo)); min-height:5px;}
+  .bar.hot i{background:linear-gradient(180deg,var(--coral),var(--indigo));}
+  .bar span{font-family:var(--font-mono); font-size:8px; color:var(--muted);}
+  .hbar{margin-bottom:12px;}
+  .hbar .hl{display:flex; justify-content:space-between; font-size:12px; margin-bottom:5px;}
+  .hbar .hl b{font-family:var(--font-mono); font-weight:500; font-size:10.5px; color:var(--smoke);}
+  .hbar .track{height:6px; border-radius:999px; background:rgba(255,255,255,.08); overflow:hidden;}
+  .hbar .track i{display:block; height:100%; border-radius:999px; background:linear-gradient(90deg,var(--azure),var(--indigo));}
+  .hbar .track i.c{background:linear-gradient(90deg,var(--coral),var(--indigo));}
+  .hbar .track i.g{background:linear-gradient(90deg,var(--good),var(--azure));}
+  .split{display:flex; height:14px; border-radius:999px; overflow:hidden; margin:6px 0 10px;}
+  .split i{height:100%;}
+
+  table{width:100%; border-collapse:collapse; font-size:12.5px;}
+  th,td{padding:10px 12px; text-align:left; border-bottom:1px solid var(--hair-soft);}
+  th{font-family:var(--font-mono); font-size:9px; letter-spacing:1.2px; text-transform:uppercase; color:var(--muted); font-weight:500;}
+  tr:hover td{background:rgba(255,255,255,.02);}
+  .mono{font-family:var(--font-mono); font-size:10.5px; color:var(--smoke);}
+  .tag{font-family:var(--font-mono); font-size:8.5px; letter-spacing:1px; border-radius:999px; padding:3px 9px; white-space:nowrap;}
+  .t-ok{color:var(--good); border:1px solid rgba(126,224,168,.4); background:rgba(126,224,168,.08);}
+  .t-run{color:var(--warn); border:1px solid rgba(255,207,126,.4); background:rgba(255,207,126,.08);}
+  .t-fail{color:var(--bad); border:1px solid rgba(255,157,157,.4); background:rgba(255,157,157,.08);}
+  .t-pro{color:var(--azure-soft); border:1px solid rgba(61,124,255,.4); background:rgba(61,124,255,.08);}
+  .rowact{border:1px solid var(--hair); background:var(--glass); color:var(--smoke); border-radius:8px; padding:5px 11px; font-size:11px;}
+  .rowact:hover{color:var(--mist); border-color:rgba(255,148,102,.5);}
+  .rowact.ban{color:var(--bad);}
+  .searchbox{display:flex; align-items:center; gap:8px; background:var(--glass); border:1px solid var(--hair); border-radius:999px; padding:8px 14px; width:280px; margin-bottom:14px;}
+  .searchbox input{flex:1; background:none; border:none; outline:none; color:var(--mist); font-size:12.5px;}
+  .searchbox input::placeholder{color:var(--muted);}
+
+  .tools{display:grid; grid-template-columns:repeat(2,1fr); gap:10px;}
+  .tool{display:flex; align-items:center; gap:11px; background:var(--glass); border:1px solid var(--hair); border-radius:12px; padding:11px 14px;}
+  .tool .tic{width:30px;height:30px; border-radius:9px; background:rgba(255,255,255,.06); border:1px solid var(--hair); display:flex; align-items:center; justify-content:center; font-size:14px; flex-shrink:0;}
+  .tool b{display:block; font-size:12.5px;}
+  .tool i{font-style:normal; display:block; font-size:10.5px; color:var(--muted);}
+  .tool .meta{flex:1; min-width:0;}
+  .tool .tuse{font-family:var(--font-mono); font-size:9.5px; color:var(--smoke); margin-left:auto; margin-right:10px; white-space:nowrap;}
+  .toggle{width:34px;height:19px; border-radius:999px; background:rgba(255,255,255,.12); position:relative; border:none; flex-shrink:0;}
+  .toggle::after{content:""; position:absolute; top:2.5px; left:2.5px; width:14px;height:14px; border-radius:50%; background:#fff; transition:left .15s;}
+  .toggle.on{background:var(--good);}
+  .toggle.on::after{left:17.5px;}
+  .toggle.off2{background:rgba(255,80,80,.5);}
+
+  .sys{display:grid; grid-template-columns:repeat(3,1fr); gap:13px;}
+  .uptime{display:flex; gap:3px; margin-top:8px;}
+  .uptime i{flex:1; height:22px; border-radius:3px; background:var(--good); opacity:.85;}
+  .uptime i.warn{background:var(--warn);}
+  .uptime i.down{background:var(--bad);}
+
+  footer.foot{margin-top:40px; padding-top:18px; border-top:1px solid var(--hair-soft); display:flex; justify-content:space-between;
+    font-family:var(--font-mono); font-size:9.5px; letter-spacing:2px; text-transform:uppercase; color:var(--muted);}
+
+  .toast{position:fixed; left:50%; bottom:26px; transform:translateX(-50%) translateY(14px); z-index:31; background:rgba(17,19,30,.95);
+    border:1px solid rgba(255,207,126,.45); color:var(--mist); border-radius:12px; padding:10px 18px; font-size:12.5px; opacity:0;
+    pointer-events:none; transition:all .25s ease;}
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+
+  @media (max-width:960px){
+    .layout{flex-direction:column;} .side{position:static; width:100%; flex:none;}
+    .menu{flex-direction:row; flex-wrap:wrap;} .mi{width:auto;}
+    .stats,.sys{grid-template-columns:repeat(2,1fr);} .duo{grid-template-columns:1fr;} .tools{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+
+<div class="aurora"><div class="orb orb-1"></div><div class="orb orb-2"></div></div>
+
+<div class="rel">
+  <nav class="nav">
+    <a class="nav-brand" href="reel-home-redesign.html"><div class="brand-mark"></div><span class="brand-word">REEL</span></a>
+    <span class="admin-tag">Admin Console</span>
+    <div class="nav-links">
+      <a class="nav-link" href="reel-home-redesign.html">Tạo mới</a>
+      <a class="nav-link" href="reel-library.html">Thư viện</a>
+      <a class="nav-link" href="reel-pricing.html">Bảng giá</a>
+      <a class="nav-link" href="reel-profile.html">Hồ sơ</a>
+    </div>
+    <div class="nav-spacer"></div>
+    <span class="live"><span class="dot"></span>QUEUE LIVE · 14 JOB</span>
+    <div class="credit-pill"><span class="dot"></span>1,240 CREDITS</div>
+    <a class="avatar" href="reel-profile.html" title="Hồ sơ">Q</a>
+  </nav>
+
+  <main class="wrap">
+    <div class="layout">
+
+      <aside class="side">
+        <div class="menu">
+          <button class="mi active" data-p="overview" onclick="tab(this)">📈 Tổng quan</button>
+          <button class="mi" data-p="users" onclick="tab(this)">👥 Người dùng <span class="cnt">4.8k</span></button>
+          <button class="mi" data-p="queue" onclick="tab(this)">⚙️ Hàng đợi tạo <span class="cnt">14</span></button>
+          <button class="mi" data-p="tools" onclick="tab(this)">🧰 Công cụ AI <span class="cnt">20</span></button>
+          <button class="mi" data-p="mod" onclick="tab(this)">🛡️ Kiểm duyệt <span class="cnt">3</span></button>
+          <button class="mi" data-p="rev" onclick="tab(this)">💰 Doanh thu</button>
+          <button class="mi" data-p="sys" onclick="tab(this)">🖥️ Hệ thống</button>
+        </div>
+        <div class="side-note">⚠ Mọi thay đổi ở đây ảnh hưởng môi trường thật — mockup chỉ để xem, không lưu.</div>
+      </aside>
+
+      <div class="main">
+
+        <!-- TỔNG QUAN -->
+        <section class="panel show" id="p-overview">
+          <div class="ph"><h2>Tổng quan hệ thống</h2><p>Cập nhật 30 giây trước · múi giờ GMT+7.</p></div>
+          <div class="stats">
+            <div class="stat"><b>4.812</b><span>Người dùng</span><span class="trend up">▲ 6,2%</span></div>
+            <div class="stat"><b>1.284</b><span>Tạo mới hôm nay</span><span class="trend up">▲ 11%</span></div>
+            <div class="stat"><b>38,4tr</b><span>Doanh thu tháng</span><span class="trend up">▲ 9,8%</span></div>
+            <div class="stat"><b>98,2%</b><span>Tạo thành công</span><span class="trend down">▼ 0,4%</span></div>
+          </div>
+          <div class="duo">
+            <div class="box">
+              <h4>Tác phẩm tạo 7 ngày qua (nghìn)</h4>
+              <div class="bars">
+                <div class="bar"><i style="height:42%"></i><span>T2</span></div>
+                <div class="bar"><i style="height:55%"></i><span>T3</span></div>
+                <div class="bar"><i style="height:38%"></i><span>T4</span></div>
+                <div class="bar"><i style="height:66%"></i><span>T5</span></div>
+                <div class="bar"><i style="height:58%"></i><span>T6</span></div>
+                <div class="bar hot"><i style="height:92%"></i><span>T7</span></div>
+                <div class="bar hot"><i style="height:100%"></i><span>CN</span></div>
+              </div>
+            </div>
+            <div class="box">
+              <h4>Công cụ phổ biến (7 ngày)</h4>
+              <div class="hbar"><div class="hl"><span>🖼️ Ảnh</span><b>41%</b></div><div class="track"><i style="width:41%"></i></div></div>
+              <div class="hbar"><div class="hl"><span>📖 Manga / Sách</span><b>23%</b></div><div class="track"><i class="c" style="width:23%"></i></div></div>
+              <div class="hbar"><div class="hl"><span>🎞️ Video</span><b>14%</b></div><div class="track"><i style="width:14%"></i></div></div>
+              <div class="hbar"><div class="hl"><span>🎙️ Âm thanh</span><b>13%</b></div><div class="track"><i class="g" style="width:13%"></i></div></div>
+              <div class="hbar"><div class="hl"><span>Khác (3D, code…)</span><b>9%</b></div><div class="track"><i style="width:9%"></i></div></div>
+              <h4 style="margin-top:16px">Gói người dùng</h4>
+              <div class="split"><i style="width:78%; background:var(--azure)"></i><i style="width:16%; background:var(--indigo)"></i><i style="width:6%; background:var(--coral)"></i></div>
+              <span class="mono">FREE 78% · PRO 16% · STUDIO 6%</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- NGƯỜI DÙNG -->
+        <section class="panel" id="p-users">
+          <div class="ph"><h2>Người dùng</h2><p>4.812 tài khoản · 128 đăng ký mới tuần này.</p></div>
+          <div class="searchbox"><input id="uq" placeholder="Tìm email / tên…" oninput="ufilter()"></div>
+          <div class="box" style="padding:6px 14px">
+            <table>
+              <thead><tr><th>Người dùng</th><th>Gói</th><th>Credits</th><th>Tác phẩm</th><th>Đăng ký</th><th></th></tr></thead>
+              <tbody id="urows">
+                <tr><td><b>quang@reel.app</b><br><span class="mono">@quangtrinh</span></td><td><span class="tag t-pro">PRO</span></td><td>1.240</td><td>96</td><td class="mono">15/03/2026</td><td><button class="rowact" onclick="toast('Mockup — mở hồ sơ user #1017')">Xem</button></td></tr>
+                <tr><td><b>linh.nguyen@gmail.com</b><br><span class="mono">@linhart</span></td><td><span class="tag t-pro">PRO</span></td><td>8.910</td><td>412</td><td class="mono">02/01/2026</td><td><button class="rowact" onclick="toast('Mockup — mở hồ sơ user #0812')">Xem</button></td></tr>
+                <tr><td><b>studio@toonlab.vn</b><br><span class="mono">@toonlab</span></td><td><span class="tag t-ok">STUDIO</span></td><td>5.102</td><td>1.208</td><td class="mono">22/11/2025</td><td><button class="rowact" onclick="toast('Mockup — mở hồ sơ user #0331')">Xem</button></td></tr>
+                <tr><td><b>minh.test@yahoo.com</b><br><span class="mono">@minhdev</span></td><td><span class="tag" style="color:var(--smoke); border:1px solid var(--hair)">FREE</span></td><td>38</td><td>6</td><td class="mono">16/09/2026</td><td><button class="rowact ban" onclick="toast('Mockup — khoá user #4921')">Khoá</button></td></tr>
+                <tr><td><b>ha.spam@.mail.com</b><br><span class="mono">@hahaha88</span></td><td><span class="tag t-fail">BỊ KHOÁ</span></td><td>0</td><td>2</td><td class="mono">14/09/2026</td><td><button class="rowact" onclick="toast('Mockup — mở khoá user #4902')">Mở khoá</button></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- HÀNG ĐỢI -->
+        <section class="panel" id="p-queue">
+          <div class="ph"><h2>Hàng đợi tạo</h2><p>14 job đang chạy · GPU pool: 4×A100 · trung bình 22s/job.</p></div>
+          <div class="box" style="padding:6px 14px">
+            <table>
+              <thead><tr><th>ID</th><th>Công cụ</th><th>Người dùng</th><th>Prompt</th><th>Credits</th><th>Trạng thái</th></tr></thead>
+              <tbody>
+                <tr><td class="mono">#J-9241</td><td>📖 Manga trang 9</td><td class="mono">@quangtrinh</td><td>Chương 2 — Lò Rèn Trăng…</td><td class="mono">6</td><td><span class="tag t-run">⟳ ĐANG CHẠY</span></td></tr>
+                <tr><td class="mono">#J-9240</td><td>🎞️ Video 8s</td><td class="mono">@linhart</td><td>Flycam thác nước sunset…</td><td class="mono">45</td><td><span class="tag t-run">⟳ ĐANG CHẠY</span></td></tr>
+                <tr><td class="mono">#J-9239</td><td>🖼️ Ảnh 4K</td><td class="mono">@toonlab</td><td>Poster phim kinh dị…</td><td class="mono">4</td><td><span class="tag t-ok">HÀNG ĐỢI</span></td></tr>
+                <tr><td class="mono">#J-9238</td><td>🎙️ Giọng nói</td><td class="mono">@linhart</td><td>Chương 3 — narration…</td><td class="mono">8</td><td><span class="tag t-fail">LỖI · HOÀN CR</span></td></tr>
+                <tr><td class="mono">#J-9237</td><td>📚 Sách chương 4</td><td class="mono">@quangtrinh</td><td>Đêm Trước Cột Mốc…</td><td class="mono">5</td><td><span class="tag t-ok">HÀNG ĐỢI</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- CÔNG CỤ -->
+        <section class="panel" id="p-tools">
+          <div class="ph"><h2>Công cụ AI</h2><p>Bật/tắt từng công cụ cho toàn hệ thống — tắt sẽ ẩn ngay cả với user đã ghim.</p></div>
+          <div class="tools">
+            <div class="tool"><span class="tic">🖼️</span><span class="meta"><b>Ảnh</b><i>SDXL · 4 CR</i></span><span class="tuse">3.2k/ngày</span><button class="toggle on" onclick="tt(this,'Ảnh')"></button></div>
+            <div class="tool"><span class="tic">🎞️</span><span class="meta"><b>Video</b><i>LTX · 30 CR</i></span><span class="tuse">410/ngày</span><button class="toggle on" onclick="tt(this,'Video')"></button></div>
+            <div class="tool"><span class="tic">📖</span><span class="meta"><b>Manga</b><i>Studio · 6 CR/trang</i></span><span class="tuse">1.1k trang/ngày</span><button class="toggle on" onclick="tt(this,'Manga')"></button></div>
+            <div class="tool"><span class="tic">🎙️</span><span class="meta"><b>Giọng nói</b><i>TTS · 1 CR/100 từ</i></span><span class="tuse">890/ngày</span><button class="toggle on" onclick="tt(this,'Giọng nói')"></button></div>
+            <div class="tool"><span class="tic">🎵</span><span class="meta"><b>Nhạc nền</b><i>MusicGen · 10 CR</i></span><span class="tuse">240/ngày</span><button class="toggle on" onclick="tt(this,'Nhạc nền')"></button></div>
+            <div class="tool"><span class="tic">🎤</span><span class="meta"><b>Bài hát</b><i>SongGen · 20 CR</i></span><span class="tuse">85/ngày</span><button class="toggle on" onclick="tt(this,'Bài hát')"></button></div>
+            <div class="tool"><span class="tic">🔊</span><span class="meta"><b>Sound Effect</b><i>AudioGen · 1 CR</i></span><span class="tuse">1.4k/ngày</span><button class="toggle on" onclick="tt(this,'Sound Effect')"></button></div>
+            <div class="tool"><span class="tic">🧊</span><span class="meta"><b>Mô hình 3D</b><i>TripoSR · 15 CR</i></span><span class="tuse">66/ngày</span><button class="toggle on" onclick="tt(this,'Mô hình 3D')"></button></div>
+            <div class="tool"><span class="tic">🏠</span><span class="meta"><b>Cảnh 3D</b><i>Scene · 15 CR</i></span><span class="tuse">31/ngày</span><button class="toggle on" onclick="tt(this,'Cảnh 3D')"></button></div>
+            <div class="tool"><span class="tic">🗺️</span><span class="meta"><b>Bản đồ</b><i>4 CR</i></span><span class="tuse">48/ngày</span><button class="toggle on" onclick="tt(this,'Bản đồ')"></button></div>
+            <div class="tool"><span class="tic">🎮</span><span class="meta"><b>Game</b><i>Beta · 40 CR</i></span><span class="tuse">12/ngày</span><button class="toggle" onclick="tt(this,'Game')"></button></div>
+            <div class="tool"><span class="tic">🧑‍💻</span><span class="meta"><b>Agent</b><i>Beta · tuỳ bước</i></span><span class="tuse">7/ngày</span><button class="toggle" onclick="tt(this,'Agent')"></button></div>
+          </div>
+        </section>
+
+        <!-- KIỂM DUYỆT -->
+        <section class="panel" id="p-mod">
+          <div class="ph"><h2>Kiểm duyệt nội dung</h2><p>3 tác phẩm bị report trong 24 giờ — xử lý trong 48h theo điều khoản mục 5.</p></div>
+          <div class="box" style="padding:6px 14px">
+            <table>
+              <thead><tr><th>ID</th><th>Loại</th><th>Lý do report</th><th>Người dùng</th><th></th></tr></thead>
+              <tbody>
+                <tr><td class="mono">#C-556</td><td>🖼️ Ảnh</td><td>Nghi simularity nhân vật có bản quyền</td><td class="mono">@user882</td><td><button class="rowact" onclick="toast('Mockup — giữ lại, báo kết quả cho người report')">Giữ</button> <button class="rowact ban" onclick="toast('Mockup — gỡ nội dung, trừ credit? (không — lỗi user)')">Gỡ</button></td></tr>
+                <tr><td class="mono">#C-554</td><td>📖 Manga trang</td><td>Nội dung 18+ chưa che</td><td class="mono">@anon404</td><td><button class="rowact" onclick="toast('Mockup — giữ lại')">Giữ</button> <button class="rowact ban" onclick="toast('Mockup — gỡ nội dung')">Gỡ</button></td></tr>
+                <tr><td class="mono">#C-551</td><td>🎤 Bài hát</td><td>Lyrics copy từ bài hát có sẵn</td><td class="mono">@muzik99</td><td><button class="rowact" onclick="toast('Mockup — giữ lại')">Giữ</button> <button class="rowact ban" onclick="toast('Mockup — gỡ nội dung')">Gỡ</button></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- DOANH THU -->
+        <section class="panel" id="p-rev">
+          <div class="ph"><h2>Doanh thu</h2><p>Đơn vị: nghìn đồng · nguồn: VNPay / Momo / Stripe.</p></div>
+          <div class="duo">
+            <div class="box">
+              <h4>Doanh thu 6 tháng</h4>
+              <div class="bars">
+                <div class="bar"><i style="height:34%"></i><span>T4</span></div>
+                <div class="bar"><i style="height:41%"></i><span>T5</span></div>
+                <div class="bar"><i style="height:52%"></i><span>T6</span></div>
+                <div class="bar"><i style="height:60%"></i><span>T7</span></div>
+                <div class="bar"><i style="height:74%"></i><span>T8</span></div>
+                <div class="bar hot"><i style="height:100%"></i><span>T9</span></div>
+              </div>
+            </div>
+            <div class="box">
+              <h4>Giao dịch gần đây</h4>
+              <div class="hbar" style="margin-bottom:6px"><div class="hl"><span>toonlab — Studio tháng 9</span><b>499k</b></div></div>
+              <div class="hbar" style="margin-bottom:6px"><div class="hl"><span>linhart — Nạp 2.000 CR</span><b>899k</b></div></div>
+              <div class="hbar" style="margin-bottom:6px"><div class="hl"><span>quangtrinh — Nạp 500 CR</span><b>259k</b></div></div>
+              <div class="hbar"><div class="hl"><span>+ 214 giao dịch khác…</span><b>36,8tr</b></div></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- HỆ THỐNG -->
+        <section class="panel" id="p-sys">
+          <div class="ph"><h2>Hệ thống</h2><p>Trạng thái hạ tầng AI Server.</p></div>
+          <div class="sys">
+            <div class="box"><h4>API Server · uptime 20 ngày</h4><div class="uptime"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i class="warn"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i class="warn"></i><i></i><i></i></div><span class="mono">99,4% — 2 sự cố nhỏ &lt; 10 phút</span></div>
+            <div class="box"><h4>GPU Pool</h4><div class="hbar"><div class="hl"><span>A100 #1 — SDXL</span><b>82%</b></div><div class="track"><i style="width:82%"></i></div></div><div class="hbar"><div class="hl"><span>A100 #2 — LTX Video</span><b>64%</b></div><div class="track"><i class="c" style="width:64%"></i></div></div><div class="hbar"><div class="hl"><span>A100 #3 — TTS/Music</span><b>37%</b></div><div class="track"><i class="g" style="width:37%"></i></div></div><div class="hbar"><div class="hl"><span>A100 #4 — Worker chung</span><b>51%</b></div><div class="track"><i style="width:51%"></i></div></div></div>
+            <div class="box"><h4>Dung lượng lưu trữ</h4><div class="hbar"><div class="hl"><span>Ảnh & video user</span><b>412 GB / 1 TB</b></div><div class="track"><i style="width:41%"></i></div></div><div class="hbar"><div class="hl"><span>Avatar & dự án</span><b>28 GB</b></div><div class="track"><i class="g" style="width:3%"></i></div></div><div class="hbar"><div class="hl"><span>Model weights</span><b>180 GB</b></div><div class="track"><i class="c" style="width:18%"></i></div></div><span class="mono">Tự dọn file thùng rác &gt; 30 ngày mỗi đêm</span></div>
+          </div>
+        </section>
+
+      </div>
+    </div>
+
+    <footer class="foot"><span>REEL ADMIN © 2026</span><a class="foot" href="reel-profile.html">← Về hồ sơ cá nhân</a></footer>
+  </main>
+</div>
+
+<div class="toast" id="toastEl"></div>
+
+<script>
+  let toastTimer;
+  function toast(msg){
+    const t = document.getElementById('toastEl');
+    t.textContent = msg; t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+  }
+  function tab(btn){
+    document.querySelectorAll('.mi').forEach(m => m.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('show'));
+    document.getElementById('p-' + btn.dataset.p).classList.add('show');
+  }
+  function tt(btn, name){
+    const off = !btn.classList.contains('on');
+    btn.classList.toggle('on', off);
+    btn.classList.toggle('off2', !off);
+    toast(off ? '✓ Đã bật ' + name : '⛔ Đã tắt ' + name + ' — user không thấy công cụ này');
+  }
+  function ufilter(){
+    const q = document.getElementById('uq').value.trim().toLowerCase();
+    document.querySelectorAll('#urows tr').forEach(tr => {
+      tr.style.display = tr.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+  }
+</script>
+</body>
+</html>

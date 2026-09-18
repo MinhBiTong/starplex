@@ -1,0 +1,62 @@
+@startuml StateDiagrams
+title State Diagrams - Generations, Payments, Users
+
+skinparam state {
+  BackgroundColor #E8F4FD
+  BorderColor #1E88E5
+  FontSize 13
+  FontStyle bold
+}
+skinparam arrowThickness 2
+
+' ============== 1. GENERATIONS ==============
+state "Generations" as SG #BBDEFB
+state "**Pending**\nMới tạo, chờ xử lý" as SP
+state "**Processing**\nAI đang generate" as SPR
+state "**Completed**\nThành công, có file" as SC
+state "**Failed**\nLỗi (AI lỗi / hết credit)" as SF
+
+[*] -down-> SP : Tạo mới
+SP --> SPR : Bắt đầu generate
+SPR --> SC : SDXL success\n→ INSERT GenerationFiles\n→ UPDATE credit
+SPR --> SF : SDXL error\n→ ghi error_message\n→ refund credit
+SC --> [*]
+SF --> [*]
+
+note right of SF
+  Failed có thể retry
+  bằng cách tạo
+  Generation mới
+end note
+
+' ============== 2. PAYMENTS ==============
+state "Payments" as SPa #FFE0B2
+state "**Pending**\nChờ webhook" as SPP
+state "**Completed**\nĐã thanh toán\n+ cộng credit" as SPC
+state "**Failed**\nWebhook fail\nhoặc timeout" as SPF
+state "**Cancelled**\nUser hủy" as SPCN
+
+[*] -right-> SPP : Tạo payment\nrecord
+SPP --> SPC : Webhook success\n→ cộng credit
+SPP --> SPF : Webhook fail\nsau 3 lần retry
+SPP --> SPCN : User cancel\n/ timeout 15'
+SPC --> [*]
+SPF --> [*]
+SPCN --> [*]
+
+' ============== 3. USER STATUS ==============
+state "Users.status" as SU #C8E6C9
+state "**Active**\nBình thường" as SUA
+state "**Inactive**\nTự khóa" as SUI
+state "**Banned**\nAdmin khóa" as SUB
+
+[*] -down-> SUA : Đăng ký thành công
+SUA --> SUI : User tự yêu cầu
+SUA --> SUB : Admin ban\n(ghi lý do)
+SUI --> SUA : User kích hoạt lại
+SUB --> SUA : Admin unban
+SUI --> [*]
+SUB --> [*]
+SUA --> [*]
+
+@enduml

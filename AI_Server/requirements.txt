@@ -1,0 +1,39 @@
+# === Web framework ===
+fastapi>=0.110.0
+uvicorn[standard]>=0.27.0
+
+# === Database / ORM ===
+sqlalchemy>=2.0.0
+aiomysql>=0.2.0
+
+# === Settings / config ===
+pydantic>=2.5.0
+pydantic-settings>=2.1.0
+python-dotenv>=1.0.0
+
+# === Auth ===
+python-jose[cryptography]>=3.3.0
+passlib[bcrypt]>=1.7.4
+ecdsa>=0.19.0  # JWT signing stability
+
+# === Cache / rate limit ===
+redis>=5.0.0
+
+# === ML stack ===
+torch>=2.2.0
+# >= 0.33 for LTXLatentUpsamplePipeline (the 1080p tier).
+diffusers>=0.33.0
+transformers>=4.40.0
+accelerate>=0.30.0
+safetensors>=0.4.0
+sentencepiece>=0.2.0
+Pillow>=10.0.0
+# Video export (diffusers export_to_video) needs opencv + an ffmpeg binary.
+opencv-python>=4.9.0
+imageio>=2.34.0
+imageio-ffmpeg>=0.4.9
+
+# === Payments / utilities ===
+stripe>=7.0.0
+slowapi>=0.1.9
+python-multipart>=0.0.9

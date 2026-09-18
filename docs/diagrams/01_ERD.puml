@@ -1,0 +1,164 @@
+@startuml ERD
+title Project4 - Entity Relationship Diagram (ERD)
+
+skinparam linetype ortho
+skinparam roundcorner 10
+skinparam classFontSize 14
+skinparam classAttributeFontSize 12
+
+' ============== USERS ==============
+entity "Users" as U {
+  *id : int <<PK>>
+  --
+  *email : varchar(255) <<UNIQUE>>
+  *password_hash : varchar(255)
+  full_name : varchar(255)
+  avatar_url : varchar(500)
+  *role : enum(user, admin)
+  *status : enum(active, inactive, banned)
+  *created_at : datetime
+  updated_at : datetime
+}
+
+' ============== TOKENS ==============
+entity "RefreshTokens" as RT {
+  *id : int <<PK>>
+  --
+  *user_id : int <<FK>>
+  *token_hash : varchar(500)
+  *expires_at : datetime
+  revoked_at : datetime
+  *created_at : datetime
+}
+
+entity "PasswordResetTokens" as PRT {
+  *id : int <<PK>>
+  --
+  *user_id : int <<FK>>
+  *token_hash : varchar(500)
+  *expires_at : datetime
+  used_at : datetime
+  *created_at : datetime
+}
+
+' ============== GENERATIONS ==============
+entity "Generations" as G {
+  *id : int <<PK>>
+  --
+  *user_id : int <<FK>>
+  *type : enum(image, video)
+  *prompt : text
+  negative_prompt : text
+  aspect_ratio : varchar(20)
+  resolution : varchar(50)
+  duration_seconds : int
+  *status : enum(pending, processing, completed, failed)
+  *credit_cost : int
+  error_message : text
+  *created_at : datetime
+  completed_at : datetime
+}
+
+entity "GenerationFiles" as GF {
+  *id : int <<PK>>
+  --
+  *generation_id : int <<FK>>
+  *file_type : enum(image, video, thumbnail)
+  *file_url : varchar(2000)
+  file_size : bigint
+  *created_at : datetime
+}
+
+' ============== CREDITS ==============
+entity "CreditWallets" as CW {
+  *id : int <<PK>>
+  --
+  *user_id : int <<UNIQUE>> <<FK>>
+  *balance : int
+  *updated_at : datetime
+}
+
+entity "CreditTransactions" as CT {
+  *id : int <<PK>>
+  --
+  *user_id : int <<FK>>
+  *wallet_id : int <<FK>>
+  *type : enum(purchase, generation, refund, bonus, adjustment)
+  *amount : int
+  *balance_before : int
+  *balance_after : int
+  reference_type : varchar(50)
+  reference_id : int
+  description : varchar(500)
+  *created_at : datetime
+}
+
+' ============== PAYMENTS ==============
+entity "PaymentPackages" as PK {
+  *id : int <<PK>>
+  --
+  *name : varchar(255)
+  *price : decimal(18,2)
+  *currency : varchar(10)
+  *credit_amount : int
+  description : text
+  *is_active : bit
+  *billing_period : enum(monthly, yearly, one_time)
+  is_featured : bit
+  *created_at : datetime
+  updated_at : datetime
+}
+
+entity "PaymentPackageBenefits" as PKB {
+  *id : int <<PK>>
+  --
+  *package_id : int <<FK>>
+  *benefit : varchar(500)
+  *sort_order : int
+  *created_at : datetime
+}
+
+entity "Payments" as PAY {
+  *id : int <<PK>>
+  --
+  *user_id : int <<FK>>
+  *package_id : int <<FK>>
+  *package_name : varchar(255)
+  *credit_amount : int
+  *amount : decimal(18,2)
+  *currency : varchar(10)
+  *payment_method : enum(momo, zalopay, vnpay, bank_transfer, stripe, other)
+  *status : enum(pending, completed, failed, cancelled)
+  transaction_code : varchar(255) <<UNIQUE>>
+  provider_transaction_id : varchar(500)
+  *created_at : datetime
+  paid_at : datetime
+}
+
+' ============== SYSTEM ==============
+entity "SystemSettings" as SS {
+  *id : int <<PK>>
+  --
+  *setting_key : varchar(100) <<UNIQUE>>
+  setting_value : text
+  *value_type : enum(string, int, bool, json)
+  updated_by : int <<FK>>
+  *updated_at : datetime
+}
+
+' ============== RELATIONSHIPS ==============
+U ||--o{ RT : "has"
+U ||--o{ PRT : "has"
+U ||--o{ G : "creates"
+G ||--o{ GF : "produces"
+U ||--|| CW : "owns"
+U ||--o{ CT : "history"
+CW ||--o{ CT : "records"
+
+PK ||--o{ PKB : "lists"
+PK ||--o{ PAY : "sells"
+U ||--o{ PAY : "pays"
+
+U ||--o{ SS : "updates"
+
+@enduml
